@@ -1,0 +1,22 @@
+logging:
+  level:
+    org:
+      hibernate: INFO
+      springframework:
+        root: INFO
+        web: INFO
+
+spring:
+  datasource:
+    username: dev
+    password:
+    url: jdbc:h2:mem:dev
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  sql:
+    init:
+      mode: always
+      data-locations:
+      schema-locations:
