@@ -13,10 +13,13 @@ spring:
     url: jdbc:h2:mem:dev
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    show-sql: true
+    hibernate:
+      ddl-auto: update
 
   sql:
     init:
       mode: always
-      data-locations:
+      data-locations: classpath*:sql/data/category.sql
       schema-locations:
