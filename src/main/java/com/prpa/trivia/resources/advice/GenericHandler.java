@@ -12,11 +12,12 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.*;
 
-@ControllerAdvice(assignableTypes = CategoryController.class)
+@ControllerAdvice
 public class GenericHandler extends ResponseEntityExceptionHandler {
 
     public static String ERRORS_FIELD = "errors";
@@ -53,6 +54,21 @@ public class GenericHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, body, ex.getHeaders(), ex.getStatusCode(), request);
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Object> methodArgumentTypeMismatchExceptionHandler(
+            MethodArgumentTypeMismatchException ex, WebRequest request) {
+
+        ProblemDetail body = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST.value());
+        Locale locale = request.getLocale();
+        MessageSource messageSource = getMessageSource();
+
+        String[] fieldError = {FIELD_ERROR_FORMAT.formatted(ex.getName(), ex.getCause().getMessage())};
+        body.setTitle(messageSource.getMessage("error.resource.type.title", null, locale));
+        body.setDetail(messageSource.getMessage("error.resource.type.message", fieldError, locale));
+
+        return handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.BAD_REQUEST, request);
+    }
 
     @Override
     public ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -65,15 +81,15 @@ public class GenericHandler extends ResponseEntityExceptionHandler {
         Map<String, Object> properties = new HashMap<>();
         List<String> errors = new ArrayList<>();
 
-        errors.addAll(formatFieldErrors(ex.getBindingResult().getFieldErrors(), locale, FIELD_ERROR_FORMAT));
-        errors.addAll(formatObjectErrors(ex.getBindingResult().getGlobalErrors(), locale, OBJECT_ERROR_FORMAT));
+        errors.addAll(formatFieldErrorsToString(ex.getBindingResult().getFieldErrors(), locale, FIELD_ERROR_FORMAT));
+        errors.addAll(formatObjectErrorsToString(ex.getBindingResult().getGlobalErrors(), locale, OBJECT_ERROR_FORMAT));
 
         properties.put(ERRORS_FIELD, errors);
         ex.getBody().setProperties(properties);
         return handleExceptionInternal(ex, ex.getBody(), headers, status, request);
     }
 
-    List<String> formatFieldErrors(Iterable<FieldError> fieldErrors, Locale locale, String fieldErrorFormat) {
+    List<String> formatFieldErrorsToString(Iterable<FieldError> fieldErrors, Locale locale, String fieldErrorFormat) {
         List<String> errors = new ArrayList<>();
         for (FieldError fieldError : fieldErrors) {
             String fieldDefaultMessage = Objects.requireNonNullElse(fieldError.getDefaultMessage(), "");
@@ -83,7 +99,7 @@ public class GenericHandler extends ResponseEntityExceptionHandler {
         return errors;
     }
 
-    List<String> formatObjectErrors(List<ObjectError> objectErrors, Locale locale, String objectErrorFormat) {
+    List<String> formatObjectErrorsToString(List<ObjectError> objectErrors, Locale locale, String objectErrorFormat) {
         List<String> errors = new ArrayList<>();
         for (ObjectError objectError : objectErrors) {
             String objectDefaultMessage = Objects.requireNonNullElse(objectError.getDefaultMessage(), "");

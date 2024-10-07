@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
@@ -16,7 +13,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "Question")
 @Getter @Setter
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor @NoArgsConstructor @Builder
 public class Question {
 
     @Id
@@ -42,7 +39,7 @@ public class Question {
 
     @NotBlank
     @Length(min = 5)
-    @Column(name = "question", nullable = false, unique = true, columnDefinition = "TEXT")
+    @Column(name = "statement", nullable = false, unique = true, columnDefinition = "TEXT")
     private String statement;
 
     @NotEmpty
