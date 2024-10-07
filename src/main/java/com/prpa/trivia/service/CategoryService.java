@@ -1,7 +1,7 @@
 package com.prpa.trivia.service;
 
-import com.prpa.trivia.model.dto.CategoryDTO;
 import com.prpa.trivia.model.Category;
+import com.prpa.trivia.model.dto.CategoryDTO;
 import com.prpa.trivia.model.exceptions.SpecificResourceNotFoundException;
 import com.prpa.trivia.repository.CategoryRepository;
 import com.prpa.trivia.resources.OffsetPageRequest;
@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,5 +56,15 @@ public class CategoryService {
 
     public void delete(Long id) {
         categoryRepository.deleteById(id);
+    }
+
+    public List<Category> findOrSaveAll(List<CategoryDTO> category) {
+        if (category == null) return List.of();
+        List<Category> categories = new ArrayList<>();
+        for (CategoryDTO dto : category) {
+            dto.setName(dto.getName() != null ? dto.getName().trim() : "");
+            categories.add(categoryRepository.findByName(dto.getName()).orElseGet(() -> save(dto)));
+        }
+        return categories;
     }
 }
