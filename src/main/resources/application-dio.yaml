@@ -6,21 +6,30 @@ logging:
         root: INFO
         web: INFO
 
+application:
+  data:
+    fill:
+      category: false
+
 springdoc:
   swagger-ui:
     path: /
 
 spring:
   datasource:
-    username: dev
-    password:
-    url: jdbc:h2:mem:dev
+    username: ${PG_USER}
+    password: ${PG_PASSWORD}
+    url: jdbc:postgresql://${PG_HOST}:${PG_PORT}/${PG_DATABASE}
 
   jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     defer-datasource-initialization: true
     show-sql: true
     hibernate:
-      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: validate
 
   sql:
     init:
