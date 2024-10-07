@@ -2,7 +2,6 @@ package com.prpa.trivia.resources.advice;
 
 import com.prpa.trivia.model.exceptions.ResourceAlreadyExistException;
 import com.prpa.trivia.model.exceptions.SpecificResourceNotFoundException;
-import com.prpa.trivia.resources.CategoryController;
 import org.springframework.context.MessageSource;
 import org.springframework.http.*;
 import org.springframework.validation.FieldError;

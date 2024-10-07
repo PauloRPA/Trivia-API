@@ -9,12 +9,15 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "Category")
-@Getter @Setter @ToString
-@AllArgsConstructor @NoArgsConstructor
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class Category {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @NotBlank

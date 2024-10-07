@@ -16,6 +16,9 @@ public class SpecificResourceNotFoundException extends RuntimeException implemen
     public static final String ERROR_RESOURCE_NOT_FOUND_TITLE = "error.resource.notfound.title";
     public static final String ERROR_RESOURCE_NOT_FOUND_MESSAGE = "error.resource.notfound.message";
 
+    public static final String FALLBACK_TITLE = "Resource not found!";
+    public static final String FALLBACK_DETAIL = "The resource you're looking for was not found!";
+
     @Getter
     private final List<String> fields;
     private final ProblemDetail body;
@@ -24,8 +27,8 @@ public class SpecificResourceNotFoundException extends RuntimeException implemen
         this.fields = new ArrayList<>();
         this.fields.addAll(Arrays.asList(fields));
         this.body = ProblemDetail.forStatus(getStatusCode());
-        getBody().setTitle("Resource not found!");
-        getBody().setDetail("The resource you're looking for was not found!");
+        getBody().setTitle(FALLBACK_TITLE);
+        getBody().setDetail(FALLBACK_DETAIL);
     }
 
     @Override

@@ -104,9 +104,10 @@ public class QuestionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$.id", equalTo(QUESTION_ID.toString())))
-                .andExpect(jsonPath("$.categories[0]", equalTo(QUESTION_CATEGORY)))
-                .andExpect(jsonPath("$.difficulty", equalTo(QUESTION_DIFFICULTY)))
-                .andExpect(jsonPath("$.type", equalTo(QUESTION_TYPE)))
+                .andExpect(jsonPath("$.category[0].id", equalTo(QUESTION_CATEGORY.getId().intValue())))
+                .andExpect(jsonPath("$.category[0].name", equalTo(QUESTION_CATEGORY.getName())))
+                .andExpect(jsonPath("$.difficulty", equalTo(QUESTION_DIFFICULTY.name())))
+                .andExpect(jsonPath("$.type", equalTo(QUESTION_TYPE.name())))
                 .andExpect(jsonPath("$.statement", equalTo(QUESTION_STATEMENT)))
                 .andExpect(jsonPath("$.alternatives", equalTo(QUESTION_ALTERNATIVES)))
                 .andExpect(jsonPath("$.correctIndex", equalTo(QUESTION_ANSWER_INDEX)));
@@ -172,9 +173,10 @@ public class QuestionControllerTest {
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$", hasSize(LIMIT)))
                 .andExpect(jsonPath("$[0].id", equalTo(firstOffsetValue.getId().toString())))
-                .andExpect(jsonPath("$[0].categories[0]", equalTo(QUESTION_CATEGORY)))
-                .andExpect(jsonPath("$[0].difficulty", equalTo(QUESTION_DIFFICULTY)))
-                .andExpect(jsonPath("$[0].type", equalTo(QUESTION_TYPE)))
+                .andExpect(jsonPath("$[0].category[0].id", equalTo(QUESTION_CATEGORY.getId().intValue())))
+                .andExpect(jsonPath("$[0].category[0].name", equalTo(QUESTION_CATEGORY.getName())))
+                .andExpect(jsonPath("$[0].difficulty", equalTo(QUESTION_DIFFICULTY.name())))
+                .andExpect(jsonPath("$[0].type", equalTo(QUESTION_TYPE.name())))
                 .andExpect(jsonPath("$[0].statement", equalTo(firstOffsetValue.getStatement())))
                 .andExpect(jsonPath("$[0].alternatives", equalTo(QUESTION_ALTERNATIVES)))
                 .andExpect(jsonPath("$[0].correctIndex", equalTo(QUESTION_ANSWER_INDEX)));
@@ -202,9 +204,10 @@ public class QuestionControllerTest {
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$", hasSize(LIMIT)))
                 .andExpect(jsonPath("$[0].id", equalTo(firstOffsetValue.getId().toString())))
-                .andExpect(jsonPath("$[0].categories[0]", equalTo(QUESTION_CATEGORY)))
-                .andExpect(jsonPath("$[0].difficulty", equalTo(QUESTION_DIFFICULTY)))
-                .andExpect(jsonPath("$[0].type", equalTo(QUESTION_TYPE)))
+                .andExpect(jsonPath("$[0].category[0].id", equalTo(QUESTION_CATEGORY.getId().intValue())))
+                .andExpect(jsonPath("$[0].category[0].name", equalTo(QUESTION_CATEGORY.getName())))
+                .andExpect(jsonPath("$[0].difficulty", equalTo(QUESTION_DIFFICULTY.name())))
+                .andExpect(jsonPath("$[0].type", equalTo(QUESTION_TYPE.name())))
                 .andExpect(jsonPath("$[0].statement", equalTo(firstOffsetValue.getStatement())))
                 .andExpect(jsonPath("$[0].alternatives", equalTo(QUESTION_ALTERNATIVES)))
                 .andExpect(jsonPath("$[0].correctIndex", equalTo(QUESTION_ANSWER_INDEX)));
@@ -232,9 +235,10 @@ public class QuestionControllerTest {
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$", hasSize(DEFAULT_LIMIT)))
                 .andExpect(jsonPath("$[0].id", equalTo(firstOffsetValue.getId().toString())))
-                .andExpect(jsonPath("$[0].categories[0]", equalTo(QUESTION_CATEGORY)))
-                .andExpect(jsonPath("$[0].difficulty", equalTo(QUESTION_DIFFICULTY)))
-                .andExpect(jsonPath("$[0].type", equalTo(QUESTION_TYPE)))
+                .andExpect(jsonPath("$[0].category[0].id", equalTo(QUESTION_CATEGORY.getId().intValue())))
+                .andExpect(jsonPath("$[0].category[0].name", equalTo(QUESTION_CATEGORY.getName())))
+                .andExpect(jsonPath("$[0].difficulty", equalTo(QUESTION_DIFFICULTY.name())))
+                .andExpect(jsonPath("$[0].type", equalTo(QUESTION_TYPE.name())))
                 .andExpect(jsonPath("$[0].statement", equalTo(firstOffsetValue.getStatement())))
                 .andExpect(jsonPath("$[0].alternatives", equalTo(QUESTION_ALTERNATIVES)))
                 .andExpect(jsonPath("$[0].correctIndex", equalTo(QUESTION_ANSWER_INDEX)))
@@ -247,9 +251,8 @@ public class QuestionControllerTest {
     // ***************
 
     @Test
-    @DisplayName("Quando POST /question com o nome de uma categoria deve 201 CREATED")
+    @DisplayName("Quando POST /question com o nome de uma questão deve 201 CREATED")
     public void whenPOSTQuestionCorrectlyShouldReturn201CREATED() throws Exception {
-        final UUID newQuestionId = UUID.randomUUID();
         String questionStatement = "Question statement";
 
         QuestionDTO newQuestion = questionDTOForStatement(questionStatement);
@@ -258,8 +261,8 @@ public class QuestionControllerTest {
         given(questionService.save(any())).willReturn(expectedQuestion);
 
         String expectedLocationURI = fromPath(QUESTION_PATH)
-                .path("{id}")
-                .build(newQuestionId).toString();
+                .path("/{id}")
+                .build(expectedQuestion.getId()).toString();
 
         mockMvc.perform(post(QUESTION_PATH)
                         .contentType(APPLICATION_JSON)
@@ -269,9 +272,10 @@ public class QuestionControllerTest {
                 .andExpect(header().string("location", expectedLocationURI))
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$.id", equalTo(expectedQuestion.getId().toString())))
-                .andExpect(jsonPath("$.categories[0]", equalTo(QUESTION_CATEGORY)))
-                .andExpect(jsonPath("$.difficulty", equalTo(QUESTION_DIFFICULTY)))
-                .andExpect(jsonPath("$.type", equalTo(QUESTION_TYPE)))
+                .andExpect(jsonPath("$.category[0].id", equalTo(QUESTION_CATEGORY.getId().intValue())))
+                .andExpect(jsonPath("$.category[0].name", equalTo(QUESTION_CATEGORY.getName())))
+                .andExpect(jsonPath("$.difficulty", equalTo(QUESTION_DIFFICULTY.name())))
+                .andExpect(jsonPath("$.type", equalTo(QUESTION_TYPE.name())))
                 .andExpect(jsonPath("$.statement", equalTo(expectedQuestion.getStatement())))
                 .andExpect(jsonPath("$.alternatives", equalTo(QUESTION_ALTERNATIVES)))
                 .andExpect(jsonPath("$.correctIndex", equalTo(QUESTION_ANSWER_INDEX)))
@@ -341,11 +345,11 @@ public class QuestionControllerTest {
         final UUID id = UUID.randomUUID();
         Question question = questionForStatement("Test");
         QuestionDTO newQuestion = questionDTOForStatement("Test2");
+        System.out.println(QUESTION_DIFFICULTY.name());
 
         given(questionService.existsById(any())).willReturn(true);
         question.setStatement(newQuestion.getStatement());
         given(questionService.update(eq(id), eq(newQuestion))).willReturn(question);
-
         String putURI = QUESTION_ID_PATH.build(id).toString();
         mockMvc.perform(put(putURI)
                         .contentType(APPLICATION_JSON)
@@ -353,9 +357,10 @@ public class QuestionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$.id", equalTo(question.getId().toString())))
-                .andExpect(jsonPath("$.categories[0]", equalTo(QUESTION_CATEGORY)))
-                .andExpect(jsonPath("$.difficulty", equalTo(QUESTION_DIFFICULTY)))
-                .andExpect(jsonPath("$.type", equalTo(QUESTION_TYPE)))
+                .andExpect(jsonPath("$.category[0].id", equalTo(QUESTION_CATEGORY.getId().intValue())))
+                .andExpect(jsonPath("$.category[0].name", equalTo(QUESTION_CATEGORY.getName())))
+                .andExpect(jsonPath("$.difficulty", equalTo(QUESTION_DIFFICULTY.name())))
+                .andExpect(jsonPath("$.type", equalTo(QUESTION_TYPE.name())))
                 .andExpect(jsonPath("$.statement", equalTo(newQuestion.getStatement())))
                 .andExpect(jsonPath("$.alternatives", equalTo(QUESTION_ALTERNATIVES)))
                 .andExpect(jsonPath("$.correctIndex", equalTo(QUESTION_ANSWER_INDEX)))
@@ -378,7 +383,7 @@ public class QuestionControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title", equalTo(message("error.resource.notfound.title"))))
                 .andExpect(jsonPath("$.detail", equalTo(expectedDetail)))
-                .andExpect(jsonPath("$.instance", equalTo(QUESTION_PATH + invalidId)))
+                .andExpect(jsonPath("$.instance", equalTo(QUESTION_PATH + "/" + invalidId)))
                 .andExpect(jsonPath("$.status", equalTo(HttpStatus.BAD_REQUEST.value())))
                 .andDo(print());
     }
@@ -407,10 +412,10 @@ public class QuestionControllerTest {
         final UUID id = UUID.randomUUID();
         String questionStatement = "Test";
         String expectedDetail = message("error.resource.exists.message",
-                FIELD_ERROR_FORMAT.formatted("name", questionStatement));
+                FIELD_ERROR_FORMAT.formatted("statement", questionStatement));
 
         QuestionDTO newQuestionAlreadyExists = questionDTOForStatement(questionStatement);
-        given(questionService.existsByStatement(eq(newQuestionAlreadyExists.getStatement()))).willReturn(true);
+        given(questionService.existsByStatementAndDifferentId(eq(id), eq(newQuestionAlreadyExists.getStatement()))).willReturn(true);
 
         String putURI = QUESTION_ID_PATH.build(id).toString();
         mockMvc.perform(put(putURI)
@@ -419,7 +424,7 @@ public class QuestionControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title", equalTo(message("error.resource.exists.title"))))
                 .andExpect(jsonPath("$.detail", equalTo(expectedDetail)))
-                .andExpect(jsonPath("$.instance", equalTo(QUESTION_PATH + id)))
+                .andExpect(jsonPath("$.instance", equalTo(QUESTION_PATH + "/" + id)))
                 .andExpect(jsonPath("$.status", equalTo(HttpStatus.CONFLICT.value())))
                 .andDo(print());
     }
@@ -454,7 +459,7 @@ public class QuestionControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title", equalTo(message("error.resource.notfound.title"))))
                 .andExpect(jsonPath("$.detail", equalTo(expectedDetail)))
-                .andExpect(jsonPath("$.instance", equalTo(QUESTION_PATH + invalidId)))
+                .andExpect(jsonPath("$.instance", equalTo(QUESTION_PATH + "/" + invalidId)))
                 .andExpect(jsonPath("$.status", equalTo(HttpStatus.BAD_REQUEST.value())))
                 .andDo(print());
     }

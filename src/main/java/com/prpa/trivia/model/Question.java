@@ -43,7 +43,7 @@ public class Question {
     private String statement;
 
     @NotEmpty
-    @Column(name = "alternatives", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "alternatives", nullable = false)
     private List<String> alternatives;
 
     @NotNull
