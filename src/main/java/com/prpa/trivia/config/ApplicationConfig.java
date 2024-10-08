@@ -4,11 +4,13 @@ import com.prpa.trivia.model.Category;
 import com.prpa.trivia.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.DelegatingMessageSource;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.objenesis.SpringObjenesis;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.InputStream;
@@ -30,6 +32,7 @@ public class ApplicationConfig implements WebMvcConfigurer {
 
     @Bean
     @ConditionalOnResource(resources = "/sql/data/category.csv")
+    @ConditionalOnProperty("application.data.fill.category")
     public CommandLineRunner fillCategoryDB(@Autowired CategoryRepository categoryRepository) {
         return (args -> {
             InputStream categoriesCSV = ApplicationConfig.class.getResourceAsStream("/sql/data/category.csv");
