@@ -5,6 +5,9 @@ import com.prpa.trivia.model.dto.QuestionDTO;
 import com.prpa.trivia.model.exceptions.ResourceAlreadyExistException;
 import com.prpa.trivia.model.exceptions.SpecificResourceNotFoundException;
 import com.prpa.trivia.service.QuestionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +36,11 @@ public class QuestionController {
         this.questionService = questionService;
     }
 
+    @Operation(summary = "Busca uma questão por ID (UUID).", method = "GET")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Questão com id especificado encontrada."),
+            @ApiResponse(responseCode = "400", description = "Questão com id especificado não encontrada.")
+    })
     @GetMapping(value = QUESTION_PATH + "/{id}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Question> getQuestion(@PathVariable("id") UUID id) {
         Question found = questionService.findById(id).orElseThrow(() ->
@@ -41,10 +49,14 @@ public class QuestionController {
         return ResponseEntity.ok(found);
     }
 
+    @Operation(summary = "Busca questão dentro do offset e limit.", method = "GET")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Questões retornadas."),
+    })
     @GetMapping(value = QUESTION_PATH, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Question>> getQuestion(
-            @RequestParam(defaultValue = "-1") int offset,
-            @RequestParam(defaultValue = "-1") int limit) {
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
         offset = offset < 0 ? DEFAULT_OFFSET : offset;
         limit = limit < 0 ? DEFAULT_LIMIT : Math.min(limit, MAX_LIMIT);
 
@@ -53,6 +65,12 @@ public class QuestionController {
         return ResponseEntity.ok(found);
     }
 
+    @Operation(summary = "Insere uma nova questão.", method = "POST")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Questão criada."),
+            @ApiResponse(responseCode = "409", description = "Questão com enunciado especificado já existe."),
+            @ApiResponse(responseCode = "400", description = "Questão inválida.")
+    })
     @PostMapping(value = QUESTION_PATH, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Question> postQuestion(@Valid @RequestBody QuestionDTO newQuestion) {
         if (questionService.existsByStatement(newQuestion.getStatement())) {
@@ -66,6 +84,12 @@ public class QuestionController {
         return ResponseEntity.created(locationURI).body(created);
     }
 
+    @Operation(summary = "Altera uma questão por ID (UUID).", method = "PUT")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Questão alterada com sucesso."),
+            @ApiResponse(responseCode = "409", description = "Questão com enunciado especificado já existe."),
+            @ApiResponse(responseCode = "400", description = "Questão inválida ou ID não encontrado.")
+    })
     @PutMapping(value = QUESTION_PATH + "/{id}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Question> postQuestion(
             @PathVariable("id") UUID id,
@@ -81,6 +105,11 @@ public class QuestionController {
         return ResponseEntity.ok(updated);
     }
 
+    @Operation(summary = "Remove uma questão por ID (UUID).", method = "DELETE")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Questão removida com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Questão com id especificado não encontrada.")
+    })
     @DeleteMapping(QUESTION_PATH + "/{id}")
     public ResponseEntity<Void> postQuestion(@PathVariable("id") UUID id) {
 

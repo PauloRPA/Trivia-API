@@ -5,6 +5,9 @@ import com.prpa.trivia.model.dto.CategoryDTO;
 import com.prpa.trivia.model.exceptions.ResourceAlreadyExistException;
 import com.prpa.trivia.model.exceptions.SpecificResourceNotFoundException;
 import com.prpa.trivia.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +38,11 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
+    @Operation(summary = "Busca categoria por ID (Long).", method = "GET")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Categoria com id especificado encontrada."),
+            @ApiResponse(responseCode = "400", description = "Categoria com id especificado não encontrada.")
+    })
     @GetMapping(value = "/categories/{id}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> getCategories(@PathVariable("id") long id) {
         Category found = categoryService.findById(id).orElseThrow(() ->
@@ -43,10 +51,14 @@ public class CategoryController {
         return ResponseEntity.ok(found);
     }
 
+    @Operation(summary = "Busca categorias dentro do offset e limit.", method = "GET")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Categorias retornadas."),
+    })
     @GetMapping(value = "/categories", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Category>> getCategories(
-            @RequestParam(defaultValue = "-1") int offset,
-            @RequestParam(defaultValue = "-1") int limit) {
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
         offset = offset < 0 ? DEFAULT_OFFSET : offset;
         limit = limit < 0 ? DEFAULT_LIMIT : Math.min(limit, MAX_LIMIT);
 
@@ -55,6 +67,12 @@ public class CategoryController {
         return ResponseEntity.ok(found);
     }
 
+    @Operation(summary = "Insere uma nova categoria.", method = "POST")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Categoria criada."),
+            @ApiResponse(responseCode = "409", description = "Categoria com nome especificado já existe."),
+            @ApiResponse(responseCode = "400", description = "Categoria inválida (nome vazio).")
+    })
     @PostMapping(value = "/categories", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> postCategories(@Valid @RequestBody CategoryDTO newCategory) {
         if (categoryService.existsByName(newCategory.getName())) {
@@ -68,6 +86,12 @@ public class CategoryController {
         return ResponseEntity.created(locationURI).body(created);
     }
 
+    @Operation(summary = "Altera uma categoria por ID (long).", method = "PUT")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Categoria alterada com sucesso."),
+            @ApiResponse(responseCode = "409", description = "Categoria com nome especificado já existe."),
+            @ApiResponse(responseCode = "400", description = "Categoria inválida ou ID não encontrado.")
+    })
     @PutMapping(value = "/categories/{id}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> postCategories(
             @PathVariable("id") Long id,
@@ -83,6 +107,11 @@ public class CategoryController {
         return ResponseEntity.ok(updated);
     }
 
+    @Operation(summary = "Remove uma categoria por ID (long).", method = "DELETE")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Categoria removida com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Categoria com id especificado não encontrada.")
+    })
     @DeleteMapping("/categories/{id}")
     public ResponseEntity<Void> postCategories(@PathVariable("id") Long id) {
 
