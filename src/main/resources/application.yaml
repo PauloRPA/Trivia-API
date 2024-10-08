@@ -2,5 +2,7 @@ server:
   port: 9998
 
 spring:
+  profiles:
+    active: dev
   application:
     name: Trivia-API
