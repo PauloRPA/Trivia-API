@@ -65,7 +65,7 @@ public class QuestionService {
 
     public Question update(UUID id, QuestionDTO newQuestion) {
         Question found = questionRepository.findById(id)
-                .orElseThrow(() -> new SpecificResourceNotFoundException("id"));
+                .orElseThrow(() -> new SpecificResourceNotFoundException("id", String.valueOf(id)));
 
         List<Category> categories = categoryService.findOrSaveAll(newQuestion.getCategory());
 
@@ -94,7 +94,7 @@ public class QuestionService {
 
     public boolean existsByStatementAndDifferentId(UUID id, String statement) {
         final boolean isSameEntity = questionRepository.findById(id)
-                .orElseThrow(() -> new SpecificResourceNotFoundException("id"))
+                .orElseThrow(() -> new SpecificResourceNotFoundException("id", String.valueOf(id)))
                 .getStatement().equals(statement);
         if (isSameEntity) return false;
         return questionRepository.existsByStatement(statement);

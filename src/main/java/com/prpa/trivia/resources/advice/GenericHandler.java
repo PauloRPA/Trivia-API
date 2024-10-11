@@ -1,111 +1,80 @@
 package com.prpa.trivia.resources.advice;
 
-import com.prpa.trivia.model.exceptions.ResourceAlreadyExistException;
-import com.prpa.trivia.model.exceptions.SpecificResourceNotFoundException;
+import com.prpa.trivia.model.exceptions.ApiException;
+import com.prpa.trivia.model.exceptions.FieldReason;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.http.*;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.validation.BindException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.net.URI;
 import java.util.*;
+
+import static java.util.Objects.requireNonNullElse;
 
 @ControllerAdvice
 public class GenericHandler extends ResponseEntityExceptionHandler {
 
-    public static String ERRORS_FIELD = "errors";
-    public static final String FIELD_ERROR_FORMAT = "Field '%s' = '%s'";
-    public static final String OBJECT_ERROR_FORMAT = "Object '%s' = '%s'";
+    public static final URI BLANK_TYPE = URI.create("about:blank");
+    public static final String ERRORS_FIELD_NAME = "errors";
 
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(ResourceAlreadyExistException.class)
-    public ResponseEntity<Object> resourceAlreadyExistsExceptionHandler(
-            ResourceAlreadyExistException ex, WebRequest request) {
+    private final MessageSource messageSource;
 
-        ProblemDetail body = ex.getBody();
-        Locale locale = request.getLocale();
-        MessageSource messageSource = getMessageSource();
-
-        body.setTitle(messageSource.getMessage(ex.getTitleMessageCode(), null, locale));
-        body.setDetail(messageSource.getMessage(ex.getDetailMessageCode(), ex.getDetailMessageArguments(), locale));
-
-        return handleExceptionInternal(ex, body, ex.getHeaders(), ex.getStatusCode(), request);
+    @Autowired
+    public GenericHandler(MessageSource messageSource) {
+        this.messageSource = messageSource;
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(SpecificResourceNotFoundException.class)
-    public ResponseEntity<Object> specificResourceNotFoundExceptionHandler(
-            SpecificResourceNotFoundException ex, WebRequest request) {
-
-        ProblemDetail body = ex.getBody();
-        Locale locale = request.getLocale();
-        MessageSource messageSource = getMessageSource();
-
-        body.setTitle(messageSource.getMessage(ex.getTitleMessageCode(), null, locale));
-        body.setDetail(messageSource.getMessage(ex.getDetailMessageCode(), ex.getDetailMessageArguments(), locale));
-
-        return handleExceptionInternal(ex, body, ex.getHeaders(), ex.getStatusCode(), request);
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Object> methodArgumentTypeMismatchExceptionHandler(
-            MethodArgumentTypeMismatchException ex, WebRequest request) {
-
-        ProblemDetail body = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST.value());
-        Locale locale = request.getLocale();
-        MessageSource messageSource = getMessageSource();
-
-        String[] fieldError = {FIELD_ERROR_FORMAT.formatted(ex.getName(), ex.getCause().getMessage())};
-        body.setTitle(messageSource.getMessage("error.resource.type.title", null, locale));
-        body.setDetail(messageSource.getMessage("error.resource.type.message", fieldError, locale));
-
-        return handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<Object> resourceAlreadyExistsExceptionHandler(ApiException ex, WebRequest request) {
+        return Objects.requireNonNull(handleExceptionInternal(ex, null, ex.getHeaders(), ex.getStatusCode(), request));
     }
 
     @Override
-    public ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+    protected ResponseEntity<Object> handleExceptionInternal(
+            Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
 
-        Locale locale = request.getLocale();
-        Map<String, Object> properties = new HashMap<>();
-        List<String> errors = new ArrayList<>();
+        if (ex instanceof ErrorResponse errorResponse && ex instanceof BindException bindException) {
+            ProblemDetail problemDetail = errorResponse.updateAndGetBody(messageSource, request.getLocale());
+            List<FieldReason> fields = extractFields(bindException, request.getLocale());
+            problemDetail.setProperties(Map.of(ERRORS_FIELD_NAME, fields));
+            problemDetail.setType(BLANK_TYPE);
+            body = problemDetail;
+        } else if (ex instanceof ErrorResponse errorResponse) {
+            ProblemDetail newBody = errorResponse.updateAndGetBody(messageSource, request.getLocale());
+            newBody.setType(BLANK_TYPE);
+            body = newBody;
+        }
 
-        errors.addAll(formatFieldErrorsToString(ex.getBindingResult().getFieldErrors(), locale, FIELD_ERROR_FORMAT));
-        errors.addAll(formatObjectErrorsToString(ex.getBindingResult().getGlobalErrors(), locale, OBJECT_ERROR_FORMAT));
-
-        properties.put(ERRORS_FIELD, errors);
-        ex.getBody().setProperties(properties);
-        return handleExceptionInternal(ex, ex.getBody(), headers, status, request);
+        return super.handleExceptionInternal(ex, body, headers, statusCode, request);
     }
 
-    List<String> formatFieldErrorsToString(Iterable<FieldError> fieldErrors, Locale locale, String fieldErrorFormat) {
-        List<String> errors = new ArrayList<>();
-        for (FieldError fieldError : fieldErrors) {
-            String fieldDefaultMessage = Objects.requireNonNullElse(fieldError.getDefaultMessage(), "");
-            String defaultMessage = getMessageSource().getMessage(fieldDefaultMessage, null, locale);
-            errors.add(fieldErrorFormat.formatted(fieldError.getField(), defaultMessage));
-        }
+    private List<FieldReason> extractFields(BindException bindException, Locale locale) {
+        List<FieldReason> errors = new ArrayList<>();
+
+        bindException.getGlobalErrors().stream()
+                .map(objectError -> {
+                    String defaultMessage = requireNonNullElse(objectError.getDefaultMessage(), "");
+                    String message = messageSource.getMessage(defaultMessage, objectError.getArguments(), locale);
+                    return new FieldReason(objectError.getObjectName(), message);
+                })
+                .forEach(errors::add);
+
+        bindException.getFieldErrors().stream()
+                .map(fieldError -> {
+                    String defaultMessage = requireNonNullElse(fieldError.getDefaultMessage(), "");
+                    String message = messageSource.getMessage(defaultMessage, fieldError.getArguments(), locale);
+                    return new FieldReason(fieldError.getField(), message);
+                }).forEach(errors::add);
         return errors;
     }
-
-    List<String> formatObjectErrorsToString(List<ObjectError> objectErrors, Locale locale, String objectErrorFormat) {
-        List<String> errors = new ArrayList<>();
-        for (ObjectError objectError : objectErrors) {
-            String objectDefaultMessage = Objects.requireNonNullElse(objectError.getDefaultMessage(), "");
-            String defaultMessage = getMessageSource().getMessage(objectDefaultMessage, null, locale);
-            errors.add(objectErrorFormat.formatted(objectError.getObjectName(), defaultMessage));
-        }
-        return errors;
-    }
-
 }

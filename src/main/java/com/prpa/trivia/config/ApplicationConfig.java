@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.DelegatingMessageSource;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.objenesis.SpringObjenesis;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.InputStream;
@@ -25,7 +24,6 @@ public class ApplicationConfig implements WebMvcConfigurer {
     public void configureDelegatingMessageSource(DelegatingMessageSource delegatingMessageSource) {
         var messageSource = new ResourceBundleMessageSource();
         messageSource.addBasenames("bundles.exceptions", "bundles.messages");
-        messageSource.setUseCodeAsDefaultMessage(true);
 
         delegatingMessageSource.setParentMessageSource(messageSource);
     }

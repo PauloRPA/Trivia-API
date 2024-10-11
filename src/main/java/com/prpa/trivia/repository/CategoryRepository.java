@@ -12,5 +12,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     boolean existsByName(String name);
 
-    Optional<Category> findByName(@NotBlank(message = "error.empty.category.name.message") String name);
+    Optional<Category> findByName(@NotBlank(message = "error.category.empty.name.message") String name);
 }

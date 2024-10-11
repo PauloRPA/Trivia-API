@@ -7,9 +7,9 @@ import com.prpa.trivia.model.Question;
 import com.prpa.trivia.model.Type;
 import com.prpa.trivia.model.dto.CategoryDTO;
 import com.prpa.trivia.model.dto.QuestionDTO;
+import com.prpa.trivia.model.exceptions.FieldReason;
 import com.prpa.trivia.resources.QuestionController;
 import com.prpa.trivia.service.QuestionService;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.*;
 
-import static com.prpa.trivia.resources.advice.GenericHandler.FIELD_ERROR_FORMAT;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -135,15 +134,16 @@ public class QuestionControllerTest {
     @Test
     @DisplayName("Quando GET /question/{id} com ID com formato incorreto deve retornar 400 BAD_REQUEST")
     public void whenGETQuestionWithMalformedIDShouldReturn400BAD_REQUEST() throws Exception {
-        String expectedDetail = message("error.resource.type.message", "id").split(":")[0];
+        String expectedTitle = "Bad Request";
         String malformedUUID = "malformedUUID";
+        String expectedDetail = "Failed to convert '%s' with value: '%s'".formatted("id", malformedUUID);
 
         URI getURI = QUESTION_ID_PATH.build(malformedUUID);
         mockMvc.perform(get(getURI)
                         .accept(APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.title", equalTo(message("error.resource.type.title"))))
-                .andExpect(jsonPath("$.detail", startsWith(expectedDetail)))
+                .andExpect(jsonPath("$.title", equalTo(expectedTitle)))
+                .andExpect(jsonPath("$.detail", equalTo(expectedDetail)))
                 .andExpect(jsonPath("$.instance", equalTo(QUESTION_PATH + "/" + malformedUUID)))
                 .andExpect(jsonPath("$.status", equalTo(HttpStatus.BAD_REQUEST.value())))
                 .andDo(print());
@@ -287,8 +287,7 @@ public class QuestionControllerTest {
     public void whenPOSTQuestionThatAlreadyExistShouldReturn409CONFLICT() throws Exception {
         String questionStatement = "Statement";
         QuestionDTO newQuestion = questionDTOForStatement(questionStatement);
-        String expectedDetail = message("error.resource.exists.message",
-                FIELD_ERROR_FORMAT.formatted("statement", questionStatement));
+        String expectedDetail = message("error.resource.exists.message", "statement");
 
         given(questionService.existsByStatement(any())).willReturn(true);
 
@@ -318,10 +317,12 @@ public class QuestionControllerTest {
                 "correctIndex", "error.question.positive.correctIndex.message",
                 "category", "error.question.empty.category.message"
         );
-        List<String> expectedErrors = fieldAndMessage.entrySet().stream()
-                .map((entry) -> FIELD_ERROR_FORMAT.formatted(entry.getKey(), message(entry.getValue())))
+        List<FieldReason> expectedErrors = fieldAndMessage.entrySet().stream()
+                .map((entry) -> new FieldReason(entry.getKey(), message(entry.getValue())))
                 .toList();
 
+        String[] fieldList = expectedErrors.stream().map(FieldReason::field).toArray(String[]::new);
+        String[] reasonList = expectedErrors.stream().map(FieldReason::reason).toArray(String[]::new);
         mockMvc.perform(post(QUESTION_PATH)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newQuestion)))
@@ -331,7 +332,8 @@ public class QuestionControllerTest {
                 .andExpect(jsonPath("$.instance", equalTo(QUESTION_PATH)))
                 .andExpect(jsonPath("$.status", equalTo(HttpStatus.BAD_REQUEST.value())))
                 .andExpect(jsonPath("$.errors", hasSize(expectedErrors.size())))
-                .andExpect(jsonPath("$.errors", hasItems(expectedErrors.toArray())))
+                .andExpect(jsonPath("$.errors[*].field", containsInAnyOrder(fieldList)))
+                .andExpect(jsonPath("$.errors[*].reason", containsInAnyOrder(reasonList)))
                 .andDo(print());
     }
 
@@ -391,15 +393,16 @@ public class QuestionControllerTest {
     @Test
     @DisplayName("Quando PUT /question/{id} com ID com formato incorreto deve retornar 400 BAD_REQUEST")
     public void whenPutQuestionWithMalformedIDShouldReturn400BAD_REQUEST() throws Exception {
-        String expectedDetail = message("error.resource.type.message", "id").split(":")[0];
+        String expectedTitle = "Bad Request";
         String malformedUUID = "malformedUUID";
+        String expectedDetail = "Failed to convert '%s' with value: '%s'".formatted("id", malformedUUID);
 
         URI putURI = QUESTION_ID_PATH.build(malformedUUID);
         mockMvc.perform(get(putURI)
                         .accept(APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.title", equalTo(message("error.resource.type.title"))))
-                .andExpect(jsonPath("$.detail", Matchers.startsWith(expectedDetail)))
+                .andExpect(jsonPath("$.title", equalTo(expectedTitle)))
+                .andExpect(jsonPath("$.detail", equalTo(expectedDetail)))
                 .andExpect(jsonPath("$.instance", equalTo(QUESTION_PATH + "/" + malformedUUID)))
                 .andExpect(jsonPath("$.status", equalTo(HttpStatus.BAD_REQUEST.value())))
                 .andDo(print());
@@ -411,8 +414,7 @@ public class QuestionControllerTest {
     public void whenPUTQuestionWithQuestionAlreadyExistShouldReturn409CONFLICT() throws Exception {
         final UUID id = UUID.randomUUID();
         String questionStatement = "Test";
-        String expectedDetail = message("error.resource.exists.message",
-                FIELD_ERROR_FORMAT.formatted("statement", questionStatement));
+        String expectedDetail = message("error.resource.exists.message", "statement");
 
         QuestionDTO newQuestionAlreadyExists = questionDTOForStatement(questionStatement);
         given(questionService.existsByStatementAndDifferentId(eq(id), eq(newQuestionAlreadyExists.getStatement()))).willReturn(true);
@@ -491,8 +493,6 @@ public class QuestionControllerTest {
     public void configureDelegatingMessageSource(DelegatingMessageSource delegatingMessageSource) {
         var messageSource = new ResourceBundleMessageSource();
         messageSource.addBasenames("bundles.exceptions", "bundles.messages");
-        messageSource.setUseCodeAsDefaultMessage(true);
-
         delegatingMessageSource.setParentMessageSource(messageSource);
     }
 

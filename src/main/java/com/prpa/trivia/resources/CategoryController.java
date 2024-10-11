@@ -46,7 +46,7 @@ public class CategoryController {
     @GetMapping(value = "/categories/{id}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> getCategories(@PathVariable("id") long id) {
         Category found = categoryService.findById(id).orElseThrow(() ->
-                new SpecificResourceNotFoundException("id"));
+                new SpecificResourceNotFoundException("id", String.valueOf(id)));
 
         return ResponseEntity.ok(found);
     }
@@ -101,7 +101,7 @@ public class CategoryController {
             throw new ResourceAlreadyExistException("name", newCategory.getName());
 
         if (!categoryService.existsById(id))
-            throw new SpecificResourceNotFoundException("id");
+            throw new SpecificResourceNotFoundException("id", String.valueOf(id));
 
         Category updated = categoryService.update(id, newCategory);
         return ResponseEntity.ok(updated);
@@ -116,7 +116,7 @@ public class CategoryController {
     public ResponseEntity<Void> postCategories(@PathVariable("id") Long id) {
 
         if (!categoryService.existsById(id))
-            throw new SpecificResourceNotFoundException("id");
+            throw new SpecificResourceNotFoundException("id", String.valueOf(id));
 
         categoryService.delete(id);
         return ResponseEntity.noContent().build();

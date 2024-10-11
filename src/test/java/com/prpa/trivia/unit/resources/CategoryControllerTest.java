@@ -3,6 +3,7 @@ package com.prpa.trivia.unit.resources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prpa.trivia.model.Category;
 import com.prpa.trivia.model.dto.CategoryDTO;
+import com.prpa.trivia.model.exceptions.FieldReason;
 import com.prpa.trivia.resources.CategoryController;
 import com.prpa.trivia.service.CategoryService;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,7 +27,6 @@ import java.util.Optional;
 
 import static com.prpa.trivia.resources.CategoryController.API;
 import static com.prpa.trivia.resources.CategoryController.CATEGORIES;
-import static com.prpa.trivia.resources.advice.GenericHandler.FIELD_ERROR_FORMAT;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,6 +58,7 @@ public class CategoryControllerTest {
     public static void setupAll() {
         objectMapper = new ObjectMapper();
     }
+
     // ***************
     // GET /categories/{id}
     // ***************
@@ -216,8 +217,7 @@ public class CategoryControllerTest {
     public void whenPOSTCategoriesThatAlreadyExistShouldReturn409CONFLICT() throws Exception {
         String categoryName = "Art";
         CategoryDTO newCategory = new CategoryDTO(categoryName);
-        String expectedDetail = message("error.resource.exists.message",
-                FIELD_ERROR_FORMAT.formatted("name", categoryName));
+        String expectedDetail = message("error.resource.exists.message", "name");
 
         given(categoryService.existsByName(any())).willReturn(true);
 
@@ -236,8 +236,7 @@ public class CategoryControllerTest {
     @DisplayName("Quando POST /categories com o nome de uma categoria vazia 400 BAD_REQUEST")
     public void whenPOSTEmptyCategoryShouldReturn400BAD_REQUEST() throws Exception {
         CategoryDTO newCategory = new CategoryDTO("");
-        String expectedMessage = FIELD_ERROR_FORMAT
-                .formatted("name", message("error.empty.category.name.message"));
+        FieldReason expectedMessage = new FieldReason("name", message("error.category.empty.name.message"));
 
         given(categoryService.existsByName(any())).willReturn(true);
 
@@ -249,7 +248,8 @@ public class CategoryControllerTest {
                 .andExpect(jsonPath("$.detail", equalTo("Invalid request content.")))
                 .andExpect(jsonPath("$.instance", equalTo(API + "/categories")))
                 .andExpect(jsonPath("$.status", equalTo(HttpStatus.BAD_REQUEST.value())))
-                .andExpect(jsonPath("$.errors[0]", equalTo(expectedMessage)))
+                .andExpect(jsonPath("$.errors[0].field", equalTo(expectedMessage.field())))
+                .andExpect(jsonPath("$.errors[0].reason", equalTo(expectedMessage.reason())))
                 .andDo(print());
     }
 
@@ -305,8 +305,7 @@ public class CategoryControllerTest {
     public void whenPUTCategoryWithNameAlreadyExistShouldReturn409CONFLICT() throws Exception {
         final long id = 1L;
         String categoryName = "Test";
-        String expectedDetail = message("error.resource.exists.message",
-                FIELD_ERROR_FORMAT.formatted("name", categoryName));
+        String expectedDetail = message("error.resource.exists.message", "name");
 
         CategoryDTO newCategory = new CategoryDTO(categoryName);
         given(categoryService.existsByName(eq(newCategory.getName()))).willReturn(true);
@@ -362,8 +361,6 @@ public class CategoryControllerTest {
     public void configureDelegatingMessageSource(DelegatingMessageSource delegatingMessageSource) {
         var messageSource = new ResourceBundleMessageSource();
         messageSource.addBasenames("bundles.exceptions", "bundles.messages");
-        messageSource.setUseCodeAsDefaultMessage(true);
-
         delegatingMessageSource.setParentMessageSource(messageSource);
     }
 

@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor @AllArgsConstructor
 public class CategoryDTO {
 
-    @NotBlank(message = "error.empty.category.name.message")
+    @NotBlank(message = "error.category.empty.name.message")
     private String name;
 
 }

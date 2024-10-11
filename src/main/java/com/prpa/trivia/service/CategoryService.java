@@ -44,7 +44,7 @@ public class CategoryService {
     }
 
     public Category update(Long id, CategoryDTO newCategory) {
-        Category found = findById(id).orElseThrow(() -> new SpecificResourceNotFoundException("id"));
+        Category found = findById(id).orElseThrow(() -> new SpecificResourceNotFoundException("id", String.valueOf(id)));
         if (found.getName().equals(newCategory.getName())) return found;
         found.setName(newCategory.getName());
         return categoryRepository.save(found);

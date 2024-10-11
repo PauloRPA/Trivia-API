@@ -8,12 +8,12 @@ import org.hibernate.validator.constraints.Length;
 import java.util.Objects;
 
 @Entity
-@Table(name = "Category")
 @Getter
 @Setter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "Category")
 public class Category {
 
     @Id

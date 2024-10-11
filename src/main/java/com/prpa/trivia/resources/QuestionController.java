@@ -44,7 +44,7 @@ public class QuestionController {
     @GetMapping(value = QUESTION_PATH + "/{id}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Question> getQuestion(@PathVariable("id") UUID id) {
         Question found = questionService.findById(id).orElseThrow(() ->
-                new SpecificResourceNotFoundException("id"));
+                new SpecificResourceNotFoundException("id", String.valueOf(id)));
 
         return ResponseEntity.ok(found);
     }
@@ -99,7 +99,7 @@ public class QuestionController {
             throw new ResourceAlreadyExistException("statement", newQuestion.getStatement());
 
         if (!questionService.existsById(id))
-            throw new SpecificResourceNotFoundException("id");
+            throw new SpecificResourceNotFoundException("id", String.valueOf(id));
 
         Question updated = questionService.update(id, newQuestion);
         return ResponseEntity.ok(updated);
@@ -114,7 +114,7 @@ public class QuestionController {
     public ResponseEntity<Void> postQuestion(@PathVariable("id") UUID id) {
 
         if (!questionService.existsById(id))
-            throw new SpecificResourceNotFoundException("id");
+            throw new SpecificResourceNotFoundException("id", String.valueOf(id));
 
         questionService.delete(id);
         return ResponseEntity.noContent().build();
