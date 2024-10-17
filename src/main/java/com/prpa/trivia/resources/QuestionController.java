@@ -58,7 +58,7 @@ public class QuestionController {
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "10") int limit) {
         offset = offset < 0 ? DEFAULT_OFFSET : offset;
-        limit = limit < 0 ? DEFAULT_LIMIT : Math.min(limit, MAX_LIMIT);
+        limit = limit <= 0 ? DEFAULT_LIMIT : Math.min(limit, MAX_LIMIT);
 
         List<Question> found = questionService.findAll(offset, limit);
 
