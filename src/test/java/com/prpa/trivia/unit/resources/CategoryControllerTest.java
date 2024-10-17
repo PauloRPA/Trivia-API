@@ -1,7 +1,7 @@
 package com.prpa.trivia.unit.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.prpa.trivia.model.Category;
+import com.prpa.trivia.model.trivia.Category;
 import com.prpa.trivia.model.dto.CategoryDTO;
 import com.prpa.trivia.model.exceptions.FieldReason;
 import com.prpa.trivia.resources.CategoryController;

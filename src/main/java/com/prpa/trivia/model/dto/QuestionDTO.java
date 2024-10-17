@@ -1,7 +1,7 @@
 package com.prpa.trivia.model.dto;
 
-import com.prpa.trivia.model.Difficulty;
-import com.prpa.trivia.model.Type;
+import com.prpa.trivia.model.trivia.Difficulty;
+import com.prpa.trivia.model.trivia.Type;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

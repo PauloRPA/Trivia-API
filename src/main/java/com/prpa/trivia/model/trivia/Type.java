@@ -1,4 +1,4 @@
-package com.prpa.trivia.model;
+package com.prpa.trivia.model.trivia;
 
 public enum Type {
     BOOLEAN,

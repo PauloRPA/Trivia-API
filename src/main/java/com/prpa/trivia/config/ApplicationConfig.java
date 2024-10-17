@@ -1,6 +1,6 @@
 package com.prpa.trivia.config;
 
-import com.prpa.trivia.model.Category;
+import com.prpa.trivia.model.trivia.Category;
 import com.prpa.trivia.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

@@ -1,10 +1,10 @@
 package com.prpa.trivia.unit.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.prpa.trivia.model.Category;
-import com.prpa.trivia.model.Difficulty;
-import com.prpa.trivia.model.Question;
-import com.prpa.trivia.model.Type;
+import com.prpa.trivia.model.trivia.Category;
+import com.prpa.trivia.model.trivia.Difficulty;
+import com.prpa.trivia.model.trivia.Question;
+import com.prpa.trivia.model.trivia.Type;
 import com.prpa.trivia.model.dto.CategoryDTO;
 import com.prpa.trivia.model.dto.QuestionDTO;
 import com.prpa.trivia.model.exceptions.FieldReason;

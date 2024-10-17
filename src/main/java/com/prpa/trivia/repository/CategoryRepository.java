@@ -1,6 +1,6 @@
 package com.prpa.trivia.repository;
 
-import com.prpa.trivia.model.Category;
+import com.prpa.trivia.model.trivia.Category;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -1,7 +1,7 @@
 package com.prpa.trivia.service;
 
-import com.prpa.trivia.model.Category;
-import com.prpa.trivia.model.Question;
+import com.prpa.trivia.model.trivia.Category;
+import com.prpa.trivia.model.trivia.Question;
 import com.prpa.trivia.model.dto.QuestionDTO;
 import com.prpa.trivia.model.exceptions.SpecificResourceNotFoundException;
 import com.prpa.trivia.repository.QuestionRepository;

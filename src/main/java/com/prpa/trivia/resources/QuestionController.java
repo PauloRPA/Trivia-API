@@ -1,6 +1,6 @@
 package com.prpa.trivia.resources;
 
-import com.prpa.trivia.model.Question;
+import com.prpa.trivia.model.trivia.Question;
 import com.prpa.trivia.model.dto.QuestionDTO;
 import com.prpa.trivia.model.exceptions.ResourceAlreadyExistException;
 import com.prpa.trivia.model.exceptions.SpecificResourceNotFoundException;
