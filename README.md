@@ -31,7 +31,7 @@ git clone https://github.com/PauloRPA/Trivia-API
 2. Entre na pasta do repositório e rode o comando `mvn spring-boot:run`.
 3. Espere o processo de build e após o seu fim a aplicação estará disponível na porta `9998`.
 
-A aplicação usará por padrão o perfil "dev". Nesse perfil o banco de dados a será usado o banco de dados H2 em memória
+A aplicação usará por padrão o perfil "dev". Nesse perfil será usado o banco de dados H2 em memória
 e devido a isso não é necessário configurar as variáveis de ambiente para o banco de dados.
 Para que a aplicação possa ser testada com mais facilidade o swagger (OpenAPI) esta configurado para responder
 a requisições no caminho root (/), sendo assim, basta acessar http://localhost:9998 para acessar o Swagger.
